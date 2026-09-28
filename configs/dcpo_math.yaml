@@ -1,0 +1,67 @@
+# DCPO baseline --- mathematics domain.
+# Verbalized calibration with decoupled, segmented credit assignment and a within-group
+# target mixture (Section 2.2): the answer and confidence segments are scored separately.
+# The model states a numeric confidence in <confidence> tags.
+model_name_or_path: models/Qwen3-8B-conf
+run_name: dcpo_math
+output_dir: outputs/dcpo_math
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+dataset_name: data/deepscaler-uniform
+num_processes: 8
+bf16: true
+beta: 0.0
+eval_strategy: 'no'
+eval_on_start: false
+gradient_accumulation_steps: 64
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+learning_rate: 2e-06
+lr_scheduler_type: constant
+warmup_ratio: 0.0
+log_level: info
+logging_steps: 1
+logging_strategy: steps
+mask_truncated_completions: true
+max_prompt_length: 1024
+max_completion_length: 8192
+num_generations: 8
+num_iterations: 1
+num_train_epochs: 2.0
+overwrite_output_dir: true
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 8
+push_to_hub: false
+report_to:
+- wandb
+save_strategy: 'no'
+scale_rewards: false
+seed: 43
+temperature: 1.0
+use_vllm: true
+vllm_device: auto
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+disable_dropout: true
+average_tokens_across_devices: false
+optim: adamw_torch
+enable_thinking: false
+method: dcpo
+format_pattern: bac
+sys_prompt_name: bac_boxed
+# The reward functions below are inert on the segmented DCPO path (it computes its answer
+# and confidence rewards internally); they are kept only for trainer construction and logging.
+reward_funcs:
+- format
+- accuracy
+- brier
+- mean_confidence
+- confidence_one_or_zero
+reward_weights:
+- 0.5
+- 0.5
+- 0.5
+- 1.0e-05
+- 1.0e-05

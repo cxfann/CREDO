@@ -1,0 +1,68 @@
+# GRPO baseline --- code domain.
+# Plain RLVR with no calibration term (see grpo_math.yaml); only accuracy_code_ungated
+# (weight 1.0) drives training. Code domain differs by dataset, prompt budget, code-graded
+# reward registry, and the fenced ```python answer carrier.
+model_name_or_path: models/Qwen3-8B-conf
+run_name: grpo_code
+output_dir: outputs/grpo_code
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+dataset_name: data/code-deepcoder
+answer_format: code
+num_processes: 8
+bf16: true
+beta: 0.0
+eval_strategy: 'no'
+eval_on_start: false
+gradient_accumulation_steps: 64
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+learning_rate: 2e-06
+lr_scheduler_type: constant
+warmup_ratio: 0.0
+log_level: info
+logging_steps: 1
+logging_strategy: steps
+mask_truncated_completions: true
+max_prompt_length: 2048
+max_completion_length: 6144
+num_generations: 8
+num_iterations: 1
+num_train_epochs: 2.0
+overwrite_output_dir: true
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 8
+push_to_hub: false
+report_to:
+- wandb
+save_strategy: 'no'
+scale_rewards: false
+seed: 43
+temperature: 1.0
+use_vllm: true
+vllm_device: auto
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+disable_dropout: true
+average_tokens_across_devices: false
+optim: adamw_torch
+enable_thinking: false
+method: grpo
+format_pattern: bac
+sys_prompt_name: bac_boxed_code
+reward_funcs:
+- format_code
+- accuracy_code
+- brier_code
+- mean_confidence
+- confidence_one_or_zero
+- accuracy_code_ungated
+reward_weights:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 1.0

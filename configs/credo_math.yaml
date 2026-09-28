@@ -1,0 +1,81 @@
+# CREDO (Confidence REaDOut) --- mathematics domain.
+# Trains Qwen3-8B on DeepScaleR with the differentiable confidence readout (Section 3):
+# the confidence is read from the <CONF_HIGH>/<CONF_LOW> token pair and trained by an
+# MSE regression, while the policy gradient scores the answer and analysis segments and
+# discrepancy weighting feeds the readout back into the answer channel.
+# Hyperparameters follow Appendix B (Table 4).
+model_name_or_path: models/Qwen3-8B-conf
+run_name: credo_math
+output_dir: outputs/credo_math
+model_revision: main
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+dataset_name: data/deepscaler-uniform
+num_processes: 8
+bf16: true
+beta: 0.0
+eval_strategy: 'no'
+eval_on_start: false
+gradient_accumulation_steps: 64
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: false
+learning_rate: 2e-06
+lr_scheduler_type: constant
+warmup_ratio: 0.0
+log_level: info
+logging_steps: 1
+logging_strategy: steps
+mask_truncated_completions: true
+max_prompt_length: 1024
+max_completion_length: 8192
+num_generations: 8
+num_iterations: 1
+num_train_epochs: 2.0
+overwrite_output_dir: true
+per_device_train_batch_size: 2
+per_device_eval_batch_size: 8
+push_to_hub: false
+report_to:
+- wandb
+save_strategy: 'no'
+scale_rewards: false
+seed: 43
+temperature: 1.0
+use_vllm: true
+vllm_device: auto
+vllm_gpu_memory_utilization: 0.6
+vllm_tensor_parallel_size: 1
+vllm_logprobs: 20
+disable_dropout: true
+average_tokens_across_devices: false
+optim: adamw_torch
+enable_thinking: false
+method: credo
+format_pattern: bac
+sys_prompt_name: bac_boxed_credo
+# CREDO calibration + policy hyperparameters (Appendix B, Table 4).
+mse_alpha: 0.03                # alpha: weight of the differentiable MSE calibration loss
+mse_alpha_warmup_steps: 30     # linear warmup steps for alpha (and kappa)
+cal_gamma: 0.5                 # gamma: target mixture t = gamma*a_i + (1-gamma)*group_mean
+w_fmt_ans: 0.5                 # beta: format weight in r_ans = beta*F + a
+ans_reward_mode: fmt_plus_acc  # r_ans = beta*F + a (additive format + accuracy)
+sw_kappa: 0.25                 # kappa: discrepancy-weighting strength
+sw_weight_clip:
+- 0.5
+- 2.0
+sw_warmup_steps: 30
+# The reward functions below are inert on the segmented CREDO path (Section 3.3 computes
+# r_ans and r_conf internally); they are kept only for trainer construction and logging.
+reward_funcs:
+- format
+- accuracy
+- brier
+- mean_confidence
+- confidence_one_or_zero
+reward_weights:
+- 0.5
+- 0.5
+- 0.5
+- 1.0e-05
+- 1.0e-05

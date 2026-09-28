@@ -1,0 +1,31 @@
+# --- run outputs (never commit) ---
+outputs/
+results/
+eval_outputs/
+eval_configs/*/
+logs/
+wandb/
+checkpoint-*/
+
+# --- built model checkpoints (large; build with scripts/make_conf_checkpoint.py) ---
+/models/
+
+# --- HuggingFace caches / regenerable data derivatives ---
+.hf_cache/
+cache-*.arrow
+
+# --- caches & bytecode ---
+__pycache__/
+*.pyc
+*.pyo
+
+# --- logs & large binaries / weights ---
+*.log
+*.whl
+*.safetensors
+*.bin
+*.pt
+
+# --- credentials (must never enter git) ---
+.netrc
+*.key
